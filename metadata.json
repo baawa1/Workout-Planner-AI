@@ -1,0 +1,5 @@
+{
+  "name": "Workout Planner AI",
+  "description": "An AI-powered application that generates personalized weekly workout plans based on your fitness goals, experience level, and available equipment.",
+  "requestFramePermissions": []
+}
