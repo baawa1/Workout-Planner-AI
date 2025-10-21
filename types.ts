@@ -32,3 +32,9 @@ export interface CompletedWorkoutLog {
   date: string; // ISO string
   workoutTitle: string;
 }
+
+export interface SavedWorkoutPlan {
+  id: string;
+  savedAt: string; // ISO string
+  plan: WorkoutPlan;
+}

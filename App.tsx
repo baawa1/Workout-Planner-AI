@@ -33,6 +33,13 @@ const App: React.FC = () => {
     }
   };
 
+  const handleLoadPlan = (plan: WorkoutPlan) => {
+    setIsLoading(false);
+    setError(null);
+    setWorkoutPlan(plan);
+    setView('generator');
+  };
+
   const TabButton: React.FC<{ active: boolean; onClick: () => void; icon: React.ReactNode; children: React.ReactNode }> = ({ active, onClick, icon, children }) => (
     <button
       onClick={onClick}
@@ -74,7 +81,7 @@ const App: React.FC = () => {
               </div>
               <div className="p-6">
                 {view === 'generator' ? (
-                   <WorkoutForm onGeneratePlan={handleGeneratePlan} isLoading={isLoading} />
+                   <WorkoutForm onGeneratePlan={handleGeneratePlan} onLoadPlan={handleLoadPlan} isLoading={isLoading} />
                 ) : (
                   <ProgressTracker />
                 )}

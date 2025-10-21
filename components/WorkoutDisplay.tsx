@@ -4,7 +4,9 @@ import type { WorkoutPlan, DailyWorkout, Exercise } from '../types';
 import { ChevronDownIcon } from './icons/ChevronDownIcon';
 import { YoutubeIcon } from './icons/YoutubeIcon';
 import { CheckCircleIcon } from './icons/CheckCircleIcon';
+import { BookmarkIcon } from './icons/BookmarkIcon';
 import { logWorkoutCompletion, hasCompletedWorkoutToday } from '../services/progressService';
+import { saveWorkoutPlan, isPlanSaved } from '../services/planService';
 
 interface WorkoutDisplayProps {
   plan: WorkoutPlan;
@@ -122,6 +124,18 @@ const DailyWorkoutCard: React.FC<{ workout: DailyWorkout }> = ({ workout }) => {
 };
 
 const WorkoutDisplay: React.FC<WorkoutDisplayProps> = ({ plan }) => {
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    setIsSaved(isPlanSaved(plan));
+  }, [plan]);
+
+  const handleSavePlan = () => {
+    saveWorkoutPlan(plan);
+    setIsSaved(true);
+    window.dispatchEvent(new CustomEvent('planSaved'));
+  };
+
   return (
     <div className="animate-fade-in space-y-8">
       <style>{`
@@ -133,9 +147,22 @@ const WorkoutDisplay: React.FC<WorkoutDisplayProps> = ({ plan }) => {
           animation: fade-in 0.5s ease-out forwards;
         }
       `}</style>
-      <div className="text-center">
+      <div className="text-center relative">
         <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">{plan.planTitle}</h2>
         <p className="mt-3 max-w-2xl mx-auto text-lg text-gray-400">{plan.weeklySummary}</p>
+        <div className="absolute top-0 right-0 -mt-2 sm:mt-0">
+          <button
+            onClick={handleSavePlan}
+            disabled={isSaved}
+            className="flex items-center gap-2 text-sm font-semibold py-2 px-3 rounded-lg transition-colors duration-200 disabled:cursor-not-allowed
+              enabled:bg-gray-700 enabled:text-gray-200 enabled:hover:bg-gray-600
+              disabled:bg-emerald-500/20 disabled:text-emerald-400"
+            aria-label={isSaved ? "Plan is saved" : "Save this plan"}
+          >
+            <BookmarkIcon className="h-5 w-5" />
+            {isSaved ? 'Saved' : 'Save Plan'}
+          </button>
+        </div>
       </div>
 
       <div className="space-y-6">

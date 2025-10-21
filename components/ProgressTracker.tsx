@@ -4,12 +4,35 @@ import { getWorkoutHistory, clearWorkoutHistory } from '../services/progressServ
 import type { CompletedWorkoutLog } from '../types';
 import { TrendingUpIcon } from './icons/TrendingUpIcon';
 import { TrashIcon } from './icons/TrashIcon';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-gray-700/80 backdrop-blur-sm text-white p-2 rounded-md border border-gray-600 shadow-lg">
+        <p className="label text-sm font-semibold">{`${label}`}</p>
+        <p className="intro text-xs">{`Workouts: ${payload[0].value}`}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
 
 const ProgressTracker: React.FC = () => {
   const [history, setHistory] = useState<CompletedWorkoutLog[]>([]);
+  
+  const refreshHistory = () => {
+    setHistory(getWorkoutHistory());
+  };
 
   useEffect(() => {
-    setHistory(getWorkoutHistory());
+    refreshHistory();
+    // Refresh history if a workout is completed while on this tab
+    window.addEventListener('workoutCompleted', refreshHistory);
+    return () => {
+      window.removeEventListener('workoutCompleted', refreshHistory);
+    };
   }, []);
 
   const handleClearHistory = () => {
@@ -23,8 +46,8 @@ const ProgressTracker: React.FC = () => {
     const weeks = [
       { label: 'This Week', count: 0 },
       { label: 'Last Week', count: 0 },
-      { label: '2 Weeks Ago', count: 0 },
-      { label: '3 Weeks Ago', count: 0 },
+      { label: '2 Wks Ago', count: 0 },
+      { label: '3 Wks Ago', count: 0 },
     ];
     const today = new Date();
     const startOfWeek = (d: Date) => {
@@ -49,8 +72,6 @@ const ProgressTracker: React.FC = () => {
     return weeks.reverse();
   }, [history]);
   
-  const maxWorkouts = Math.max(...weeklyData.map(w => w.count), 1);
-
   if (history.length === 0) {
     return (
       <div className="text-center text-gray-400 py-8">
@@ -77,20 +98,20 @@ const ProgressTracker: React.FC = () => {
         <p className="text-sm text-gray-400">Workouts completed per week</p>
       </div>
       
-      <div className="h-48 flex items-end justify-between gap-4">
-        {weeklyData.map((week, index) => (
-          <div key={index} className="flex-1 flex flex-col items-center h-full">
-            <div className="text-lg font-bold text-white">{week.count}</div>
-            <div className="w-full h-full flex items-end">
-              <div 
-                className="w-full bg-emerald-500/50 rounded-t-sm hover:bg-emerald-500 transition-all"
-                style={{ height: `${(week.count / maxWorkouts) * 100}%` }}
-                title={`${week.count} workout${week.count !== 1 ? 's' : ''}`}
-              ></div>
-            </div>
-            <div className="mt-2 text-xs text-gray-400">{week.label}</div>
-          </div>
-        ))}
+      <div style={{ width: '100%', height: 200 }}>
+        <ResponsiveContainer>
+          <BarChart
+            data={weeklyData}
+            margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
+            barCategoryGap="20%"
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" vertical={false} />
+            <XAxis dataKey="label" tick={{ fill: '#9ca3af', fontSize: 12 }} tickLine={false} axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }} />
+            <YAxis allowDecimals={false} tick={{ fill: '#9ca3af', fontSize: 12 }} tickLine={false} axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(16, 185, 129, 0.1)' }}/>
+            <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
 
       <button
